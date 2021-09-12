@@ -338,7 +338,7 @@ void BLDCMotor::move(float new_target) {
       // velocity set point
       shaft_velocity_sp = target;
       // calculate the torque command
-      current_sp = PID_velocity(shaft_velocity_sp - shaft_velocity); // if current/foc_current torque control
+      current_sp = PID_velocity((shaft_velocity_sp - shaft_velocity) / shaft_velocity_sp); // if current/foc_current torque control
       // if torque controlled through voltage control
       if(torque_controller == TorqueControlType::voltage){
         // use voltage if phase-resistance not provided
