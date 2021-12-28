@@ -4,6 +4,8 @@
 #include "BLDCDriver.h"
 #include "../foc_utils.h"
 
+#if FOC_USE_CURRENT_SENSE
+
 /**
  *  Current sensing abstract class defintion
  * Each current sensoring implementation needs to extend this interface
@@ -63,5 +65,7 @@ class CurrentSense{
      */
     DQCurrent_s getFOCCurrents(float angle_el);
 };
+
+#endif
 
 #endif

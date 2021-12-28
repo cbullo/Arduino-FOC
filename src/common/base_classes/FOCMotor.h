@@ -16,8 +16,10 @@
 #define _MON_TARGET 0b1000000 // monitor target value
 #define _MON_VOLT_Q 0b0100000 // monitor voltage q value
 #define _MON_VOLT_D 0b0010000 // monitor voltage d value
+#if FOC_USE_CURRENT_SENSE
 #define _MON_CURR_Q 0b0001000 // monitor current q value - if measured
 #define _MON_CURR_D 0b0000100 // monitor current d value - if measured
+#endif
 #define _MON_VEL    0b0000010 // monitor velocity value
 #define _MON_ANGLE  0b0000001 // monitor angle value
 
@@ -37,18 +39,27 @@ enum MotionControlType{
  */
 enum TorqueControlType{
   voltage, //!< Torque control using voltage
+#if FOC_USE_DC_CURRENT_CONTROL
   dc_current, //!< Torque control using DC current (one current magnitude)
+#endif
+#if FOC_USE_FOC_CURRENT_CONTROL
   foc_current //!< torque control using dq currents
+#endif
 };
+
 
 /**
  *  FOC modulation type
  */
 enum FOCModulationType{
+#if FOC_USE_SINE_MODULATION
   SinePWM, //!< Sinusoidal PWM modulation
+#endif
   SpaceVectorPWM, //!< Space vector modulation method
+#if FOC_USE_TRAPEZOID_MODULATION
   Trapezoid_120,
   Trapezoid_150
+#endif
 };
 
 /**
@@ -76,12 +87,14 @@ class FOCMotor
      */
     void linkSensor(Sensor* sensor);
 
+#if FOC_USE_CURRENT_SENSE
     /**
      * Function linking a motor and current sensing 
      * 
      * @param current_sense CurrentSense class wrapper for the FOC algorihtm to read the motor current measurements
      */
     void linkCurrentSense(CurrentSense* current_sense);
+#endif
 
 
     /**
@@ -163,11 +176,13 @@ class FOCMotor
     TorqueControlType torque_controller; //!< parameter determining the torque control type
     MotionControlType controller; //!< parameter determining the control loop to be used
 
+#if FOC_USE_CURRENT_SENSE
     // controllers and low pass filters
     PIDController PID_current_q{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the q current PID config
     PIDController PID_current_d{DEF_PID_CURR_P,DEF_PID_CURR_I,DEF_PID_CURR_D,DEF_PID_CURR_RAMP, DEF_POWER_SUPPLY};//!< parameter determining the d current PID config
     LowPassFilter LPF_current_q{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
     LowPassFilter LPF_current_d{DEF_CURR_FILTER_Tf};//!<  parameter determining the current Low pass filter configuration 
+#endif
     PIDController PID_velocity{DEF_PID_VEL_P,DEF_PID_VEL_I,DEF_PID_VEL_D,DEF_PID_VEL_RAMP,DEF_PID_VEL_LIMIT};//!< parameter determining the velocity PID configuration
     PIDController P_angle{DEF_P_ANGLE_P,0,0,0,DEF_VEL_LIM};	//!< parameter determining the position PID configuration 
     LowPassFilter LPF_velocity{DEF_VEL_FILTER_Tf};//!<  parameter determining the velocity Low pass filter configuration 
@@ -207,7 +222,9 @@ class FOCMotor
     /** 
       * CurrentSense link
     */
+#if FOC_USE_CURRENT_SENSE
     CurrentSense* current_sense; 
+#endif
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided

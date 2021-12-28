@@ -121,6 +121,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
 
   // a bit of optimisation of variable memory for Arduino UNO (atmega328)
   switch(cmd){
+#if FOC_USE_CURRENT_SENSE
     case CMD_C_Q_PID:      //
       printVerbose(F("PID curr q| "));
       if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_q, &user_command[1]);
@@ -131,6 +132,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
       if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_current_d, &user_command[1]);
       else pid(&motor->PID_current_d, &user_command[1]);
       break;
+#endif
     case CMD_V_PID:      //
       printVerbose(F("PID vel| "));
       if(sub_cmd == SCMD_LPF_TF) lpf(&motor->LPF_velocity, &user_command[1]);
@@ -148,8 +150,10 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           printVerbose(F("volt: "));
           if(!GET) {
             motor->voltage_limit = value;
+#if FOC_USE_CURRENT_SENSE
             motor->PID_current_d.limit = value;
             motor->PID_current_q.limit = value;
+#endif
             // change velocity pid limit if in voltage mode and no phase resistance set
             if( !_isset(motor->phase_resistance) && motor->torque_controller==TorqueControlType::voltage) motor->PID_velocity.limit = value;
           }
@@ -218,12 +222,16 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
         case TorqueControlType::voltage:
           println(F("volt"));
           break;
+#if FOC_USE_DC_CURRENT_CONTROL
         case TorqueControlType::dc_current:
           println(F("dc curr"));
           break;
+#endif
+#if FOC_USE_FOC_CURRENT_CONTROL
         case TorqueControlType::foc_current:
           println(F("foc curr"));
           break;
+#endif
       }
       break;
     case CMD_STATUS:
@@ -240,18 +248,22 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           printVerbose(F("type: "));
           if(!GET) motor->foc_modulation = (FOCModulationType)value;
           switch(motor->foc_modulation){
+#if FOC_USE_SINE_MODULATION
             case FOCModulationType::SinePWM:
               println(F("SinePWM"));
               break;
+#endif
             case FOCModulationType::SpaceVectorPWM:
               println(F("SVPWM"));
               break;
+#if FOC_USE_TRAPEZOIDAL_MODULATION
             case FOCModulationType::Trapezoid_120:
               println(F("Trap 120"));
               break;
             case FOCModulationType::Trapezoid_150:
               println(F("Trap 150"));
               break;
+#endif
           }
           break;
         case SCMD_PWMMOD_CENTER:      // centered modulation

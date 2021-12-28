@@ -17,8 +17,12 @@ FOCMotor::FOCMotor()
   // sensor and motor align voltage
   voltage_sensor_align = DEF_VOLTAGE_SENSOR_ALIGN;
 
+#if FOC_USE_SINE_MODULATION
   // default modulation is SinePWM
   foc_modulation = FOCModulationType::SinePWM;
+#else
+  foc_modulation = FOCModulationType::SpaceVectorPWM;
+#endif
 
   // default target value
   target = 0;
@@ -33,8 +37,10 @@ FOCMotor::FOCMotor()
   monitor_port = nullptr;
   //sensor 
   sensor = nullptr;
+#if FOC_USE_CURRENT_SENSE
   //current sensor 
   current_sense = nullptr;
+#endif
 }
 
 
@@ -45,12 +51,14 @@ void FOCMotor::linkSensor(Sensor* _sensor) {
   sensor = _sensor;
 }
 
+#if FOC_USE_CURRENT_SENSE
 /**
 	CurrentSense linking method
 */
 void FOCMotor::linkCurrentSense(CurrentSense* _current_sense) {
   current_sense = _current_sense;
 }
+#endif
 
 // shaft angle calculation
 float FOCMotor::shaftAngle() {
@@ -101,6 +109,7 @@ void FOCMotor::monitor() {
     monitor_port->print("\t");
     printed= true;
   }
+#if FOC_USE_CURRENT_SENSE
   // read currents if possible - even in voltage mode (if current_sense available)
   if(monitor_variables & _MON_CURR_Q || monitor_variables & _MON_CURR_D) {
     DQCurrent_s c{0,0};
@@ -119,6 +128,7 @@ void FOCMotor::monitor() {
       printed= true;
     }
   }
+#endif
  
   if(monitor_variables & _MON_VEL) {
     monitor_port->print(shaft_velocity,4);

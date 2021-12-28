@@ -25,9 +25,12 @@ void BLDCMotor::linkDriver(BLDCDriver* _driver) {
 // init hardware pins
 void BLDCMotor::init() {
   if(monitor_port) monitor_port->println(F("MOT: Init"));
-
+#if FOC_USE_CURRENT_SENSE
   // if no current sensing and the user has set the phase resistance of the motor use current limit to calculate the voltage limit
   if( !current_sense && _isset(phase_resistance)) {
+#else
+  if( _isset(phase_resistance)) {
+#endif
     float new_voltage_limit = current_limit * (phase_resistance); // v_lim = current_lim / (3/2 phase resistance) - worst case
     // use it if it is less then voltage_limit set by the user
     voltage_limit = new_voltage_limit < voltage_limit ? new_voltage_limit : voltage_limit;
@@ -37,6 +40,7 @@ void BLDCMotor::init() {
   // constrain voltage for sensor alignment
   if(voltage_sensor_align > voltage_limit) voltage_sensor_align = voltage_limit;
 
+#if FOC_USE_CURRENT_SENSE
   // update the controller limits
   if(current_sense){
     // current control loop controls voltage
@@ -49,6 +53,14 @@ void BLDCMotor::init() {
   }else{
     PID_velocity.limit = voltage_limit;
   }
+#else
+  // update the controller limits
+  if(_isset(phase_resistance)){
+    PID_velocity.limit = current_limit;
+  }else{
+    PID_velocity.limit = voltage_limit;
+  }
+#endif
   P_angle.limit = velocity_limit;
 
   _delay(500);
@@ -104,6 +116,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
     shaft_angle = sensor->getAngle();
   }else if(monitor_port) monitor_port->println(F("MOT: No sensor."));
 
+#if FOC_USE_CURRENT_SENSE
   // aligning the current sensor - can be skipped
   // checks if driver phases are the same as current sense phases
   // and checks the direction of measuremnt.
@@ -112,6 +125,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
     if(current_sense) exit_flag *= alignCurrentSense();
     else if(monitor_port) monitor_port->println(F("MOT: No current sense."));
   }
+#endif
 
   if(exit_flag){
     if(monitor_port) monitor_port->println(F("MOT: Ready."));
@@ -123,6 +137,7 @@ int  BLDCMotor::initFOC( float zero_electric_offset, Direction _sensor_direction
   return exit_flag;
 }
 
+#if FOC_USE_CURRENT_SENSE
 // Calibarthe the motor and current sense phases
 int BLDCMotor::alignCurrentSense() {
   int exit_flag = 1; // success
@@ -143,6 +158,7 @@ int BLDCMotor::alignCurrentSense() {
 
   return exit_flag > 0;
 }
+#endif
 
 // Encoder alignment to electrical 0 angle
 int BLDCMotor::alignSensor() {
@@ -262,6 +278,7 @@ void BLDCMotor::loopFOC() {
     case TorqueControlType::voltage:
       // no need to do anything really
       break;
+#if FOC_USE_DC_CURRENT_CONTROL
     case TorqueControlType::dc_current:
       if(!current_sense) return;
       // read overall current magnitude
@@ -272,6 +289,8 @@ void BLDCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q);
       voltage.d = 0;
       break;
+#endif
+#if FOC_USE_FOC_CURRENT_CONTROL
     case TorqueControlType::foc_current:
       if(!current_sense) return;
       // read dq currents
@@ -283,6 +302,7 @@ void BLDCMotor::loopFOC() {
       voltage.q = PID_current_q(current_sp - current.q);
       voltage.d = PID_current_d(-current.d);
       break;
+#endif
     default:
       // no torque control selected
       if(monitor_port) monitor_port->println(F("MOT: no torque control selected!"));
@@ -377,6 +397,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
 
   switch (foc_modulation)
   {
+#if FOC_USE_TRAPEZOID_MODULATION
     case FOCModulationType::Trapezoid_120 :
       // see https://www.youtube.com/watch?v=InzXA7mWBWE Slide 5
       static int trap_120_map[6][3] = {
@@ -438,7 +459,8 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       }
 
     break;
-
+#endif
+#if FOC_USE_SINE_MODULATION
     case FOCModulationType::SinePWM :
       // Sinusoidal PWM modulation
       // Inverse Park + Clarke transformation
@@ -467,6 +489,7 @@ void BLDCMotor::setPhaseVoltage(float Uq, float Ud, float angle_el) {
       }
 
       break;
+#endif
 
     case FOCModulationType::SpaceVectorPWM :
       // Nice video explaining the SpaceVectorModulation (SVPWM) algorithm

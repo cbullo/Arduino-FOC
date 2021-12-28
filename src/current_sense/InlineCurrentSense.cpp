@@ -1,4 +1,7 @@
 #include "InlineCurrentSense.h"
+
+#if FOC_USE_CURRENT_SENSE
+
 // InlineCurrentSensor constructor
 //  - shunt_resistor  - shunt resistor value
 //  - gain  - current-sense op-amp gain
@@ -171,3 +174,4 @@ int InlineCurrentSense::driverAlign(BLDCDriver *driver, float voltage){
     return exit_flag;
 }
 
+#endif

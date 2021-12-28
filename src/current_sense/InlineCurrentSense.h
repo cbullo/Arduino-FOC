@@ -7,6 +7,7 @@
 #include "../common/base_classes/CurrentSense.h"
 #include "hardware_api.h"
 
+#if FOC_USE_CURRENT_SENSE
 
 class InlineCurrentSense: public CurrentSense{
   public:
@@ -54,5 +55,6 @@ class InlineCurrentSense: public CurrentSense{
     double offset_ic; //!< zero current C voltage value (center of the adc reading)
 
 };
+#endif
 
 #endif

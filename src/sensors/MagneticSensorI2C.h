@@ -53,6 +53,13 @@ class MagneticSensorI2C: public Sensor{
     /** experimental function to check and fix SDA locked LOW issues */
     int checkBus(byte sda_pin = SDA, byte scl_pin = SCL);
 
+protected:
+    /**
+     * Function getting current angle register value
+     * it uses angle_register variable
+     */
+    virtual int getRawCount();
+
   private:
     float cpr; //!< Maximum range of the magnetic sensor
     uint16_t lsb_used; //!< Number of bits used in LSB register
@@ -66,12 +73,6 @@ class MagneticSensorI2C: public Sensor{
     // I2C functions
     /** Read one I2C register value */
     int read(uint8_t angle_register_msb);
-
-    /**
-     * Function getting current angle register value
-     * it uses angle_register variable
-     */
-    int getRawCount();
 
     // total angle tracking variables
     float full_rotation_offset; //!<number of full rotations made

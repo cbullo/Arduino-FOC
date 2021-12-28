@@ -1,5 +1,6 @@
 #include "CurrentSense.h"
 
+#if FOC_USE_CURRENT_SENSE
 
 // get current magnitude 
 //   - absolute  - if no electrical_angle provided 
@@ -65,3 +66,5 @@ DQCurrent_s CurrentSense::getFOCCurrents(float angle_el){
     return_current.q = i_beta * ct - i_alpha * st;
     return return_current;
 }
+
+#endif
