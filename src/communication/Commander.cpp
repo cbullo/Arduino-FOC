@@ -308,6 +308,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           break;
        }
       break;
+#if FOC_USE_MONITORING
     case CMD_MONITOR:     // get current values of the state variables
       printVerbose(F("Monitor | "));
       switch (sub_cmd){
@@ -385,6 +386,7 @@ void Commander::motor(FOCMotor* motor, char* user_command) {
           break;
        }
       break;
+#endif
     default:  // unknown cmd
       printVerbose(F("unknown cmd "));
       printError();

@@ -1,5 +1,7 @@
 #include "StepperMotor.h"
 
+#if FOC_USE_STEPPER
+
 // StepperMotor(int pp)
 // - pp            - pole pair number
 // - R             - motor phase resistance
@@ -404,3 +406,5 @@ float StepperMotor::angleOpenloop(float target_angle){
 
   return Uq;
 }
+
+#endif

@@ -14,6 +14,8 @@
 #include "common/time_utils.h"
 #include "common/defaults.h"
 
+#if FOC_USE_STEPPER
+
 /**
  Stepper Motor class
 */
@@ -114,5 +116,6 @@ class StepperMotor: public FOCMotor
     long open_loop_timestamp;
 };
 
+#endif
 
 #endif

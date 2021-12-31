@@ -203,6 +203,7 @@ class FOCMotor
      */
     void useMonitoring(Print &serial);
 
+#if FOC_USE_MONITORING
     /**
      * Utility function intended to be used with serial plotter to monitor motor variables
      * significantly slowing the execution down!!!!
@@ -211,6 +212,7 @@ class FOCMotor
     unsigned int monitor_downsample = DEF_MON_DOWNSMAPLE; //!< show monitor outputs each monitor_downsample calls 
     // initial monitoring will display target, voltage, velocity and angle
     uint8_t monitor_variables = _MON_TARGET | _MON_VOLT_Q | _MON_VEL | _MON_ANGLE; //!< Bit array holding the map of variables the user wants to monitor
+#endif
    
     /** 
       * Sensor link:
@@ -228,6 +230,7 @@ class FOCMotor
 
     // monitoring functions
     Print* monitor_port; //!< Serial terminal variable if provided
+
   private:
     // monitor counting variable
     unsigned int monitor_cnt = 0 ; //!< counting variable

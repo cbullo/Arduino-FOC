@@ -10,6 +10,7 @@
 #include "../common/lowpass_filter.h"
 #include "hardware_api.h"
 
+#if FOC_USE_CURRENT_SENSE
 
 class LowsideCurrentSense: public CurrentSense{
   public:
@@ -62,5 +63,7 @@ class LowsideCurrentSense: public CurrentSense{
     float offset_ic; //!< zero current C voltage value (center of the adc reading)
 
 };
+
+#endif
 
 #endif

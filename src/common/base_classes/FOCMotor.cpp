@@ -33,8 +33,10 @@ FOCMotor::FOCMotor()
   current.q = 0;
   current.d = 0;
   
+#if FOC_USE_MONITORING
   //monitor_port 
   monitor_port = nullptr;
+#endif
   //sensor 
   sensor = nullptr;
 #if FOC_USE_CURRENT_SENSE
@@ -87,6 +89,8 @@ void FOCMotor::useMonitoring(Print &print){
   monitor_port = &print; //operate on the address of print
   if(monitor_port ) monitor_port->println(F("MOT: Monitor enabled!"));
 }
+
+#if FOC_USE_MONITORING
 
 // utility function intended to be used with serial plotter to monitor motor variables
 // significantly slowing the execution down!!!!
@@ -148,4 +152,5 @@ void FOCMotor::monitor() {
   if(printed) monitor_port->println();
   
 }
+#endif
 
